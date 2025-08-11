@@ -6,4 +6,5 @@ export type ParkingSession = {
   start_lat: number;
   start_lng: number;
   cost: number;
+  duration_seconds: number;
 };
