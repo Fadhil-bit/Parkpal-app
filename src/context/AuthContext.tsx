@@ -7,14 +7,27 @@ type AuthContextType = {
   signOut: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextType>({ session: null, signOut: async () => {} });
+const AuthContext = createContext<AuthContextType>({
+  session: null,
+  signOut: async () => {},
+});
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
+ 
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
-    supabase.auth.onAuthStateChange((_event, session) => setSession(session));
+
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, authSession) => {
+      setSession(authSession);
+    });
+
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,10 @@ import {
   Alert,
   TextInput,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { signIn } from '../lib/auth';
+import { useAuth } from '../context/AuthContext';
 
 type RootStackParamList = {
   Login: undefined;
@@ -23,29 +25,33 @@ type LoginScreenNavigationProp = NativeStackNavigationProp<
 
 export default function LoginScreen() {
   const navigation = useNavigation<LoginScreenNavigationProp>();
+  const { session } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSignIn = () => {
-    if (
-      email.trim() === 'Bedgel.fadhilndamwoukouo@edu.sait.ca' &&
-      password === 'ndam237'
-    ) {
-      navigation.reset({
-        index: 0,
-        routes: [
-          {
-            name: 'MainTabs',
-            state: {
-              index: 0,
-              routes: [{ name: 'Home' }],
-            },
-          },
-        ],
-      });
-    } else {
-      Alert.alert('Login Failed', 'Invalid email or password');
+  // Navigate to Home when session exists
+  useEffect(() => {
+    if (session) {
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'MainTabs', params: { screen: 'Home' } }],
+        })
+      );
+    }
+  }, [session, navigation]);
+
+  const handleSignIn = async () => {
+    try {
+      const { data, error } = await signIn(email.trim(), password);
+      if (error || !data.session) {
+        Alert.alert('Login Failed', error?.message || 'Invalid credentials');
+        return;
+      }
+      // session update triggers navigation in useEffect
+    } catch {
+      Alert.alert('Login Failed', 'Unexpected error occurred');
     }
   };
 
@@ -54,7 +60,6 @@ export default function LoginScreen() {
       <Text style={styles.title}>ParkPal</Text>
       <Text style={styles.subtitle}>Find. Save. Return</Text>
 
-      {/* Email Input */}
       <TextInput
         style={styles.input}
         value={email}
@@ -64,7 +69,6 @@ export default function LoginScreen() {
         keyboardType="email-address"
       />
 
-      {/* Password Input */}
       <TextInput
         style={styles.input}
         value={password}
@@ -73,12 +77,11 @@ export default function LoginScreen() {
         secureTextEntry
       />
 
-      {/* Sign In Button */}
       <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
         <Text style={styles.signInText}>Sign In</Text>
       </TouchableOpacity>
 
-      {/* Social Sign-ins */}
+      {/* Social and Register buttons unchanged */}
       <TouchableOpacity
         style={styles.socialButton}
         onPress={() => Alert.alert('Google Sign-In', 'Not implemented yet')}
@@ -93,10 +96,8 @@ export default function LoginScreen() {
         <Text style={styles.socialText}>Sign in with Apple</Text>
       </TouchableOpacity>
 
-      {/* Register Prompt */}
       <Text style={styles.registerPrompt}>Don't have an account?</Text>
 
-      {/* Register Button */}
       <TouchableOpacity
         style={styles.registerButton}
         onPress={() => navigation.navigate('Register')}
@@ -108,72 +109,15 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  input: {
-    width: '100%',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    padding: 10,
-    marginVertical: 8,
-  },
-  signInButton: {
-    marginTop: 10,
-    backgroundColor: '#000',
-    paddingVertical: 12,
-    borderRadius: 6,
-    width: '100%',
-    marginBottom: 20,
-  },
-  signInText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontSize: 16,
-  },
-  socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    width: '100%',
-    marginBottom: 15,
-  },
-  socialText: {
-    fontSize: 16,
-  },
-  registerPrompt: {
-    fontSize: 16,
-    marginTop: 30,
-    color: '#333',
-  },
-  registerButton: {
-    marginTop: 10,
-    backgroundColor: '#000',
-    paddingVertical: 12,
-    borderRadius: 6,
-    width: '100%',
-  },
-  registerText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontSize: 16,
-  },
+  container: { flex: 1, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
+  title: { fontSize: 36, fontWeight: 'bold', marginBottom: 8 },
+  subtitle: { fontSize: 16, marginBottom: 20 },
+  input: { width: '100%', borderWidth: 1, borderColor: '#ccc', borderRadius: 6, padding: 10, marginVertical: 8 },
+  signInButton: { marginTop: 10, backgroundColor: '#000', paddingVertical: 12, borderRadius: 6, width: '100%', marginBottom: 20 },
+  signInText: { color: '#fff', textAlign: 'center', fontSize: 16 },
+  socialButton: { flexDirection: 'row', alignItems: 'center', borderColor: '#ccc', borderWidth: 1, borderRadius: 6, paddingVertical: 10, paddingHorizontal: 20, width: '100%', marginBottom: 15 },
+  socialText: { fontSize: 16 },
+  registerPrompt: { fontSize: 16, marginTop: 30, color: '#333' },
+  registerButton: { marginTop: 10, backgroundColor: '#000', paddingVertical: 12, borderRadius: 6, width: '100%' },
+  registerText: { color: '#fff', textAlign: 'center', fontSize: 16 },
 });
