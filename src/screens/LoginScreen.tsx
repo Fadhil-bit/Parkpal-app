@@ -30,7 +30,6 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Navigate to Home when session exists
   useEffect(() => {
     if (session) {
       navigation.dispatch(
@@ -44,13 +43,13 @@ export default function LoginScreen() {
 
   const handleSignIn = async () => {
     try {
-      const { data, error } = await signIn(email.trim(), password);
+      const { data, error } = await signIn(email, password);
       if (error || !data.session) {
         Alert.alert('Login Failed', error?.message || 'Invalid credentials');
         return;
       }
-      // session update triggers navigation in useEffect
-    } catch {
+      // session will update and navigate via useEffect
+    } catch (e) {
       Alert.alert('Login Failed', 'Unexpected error occurred');
     }
   };
@@ -81,7 +80,6 @@ export default function LoginScreen() {
         <Text style={styles.signInText}>Sign In</Text>
       </TouchableOpacity>
 
-      {/* Social and Register buttons unchanged */}
       <TouchableOpacity
         style={styles.socialButton}
         onPress={() => Alert.alert('Google Sign-In', 'Not implemented yet')}
@@ -109,15 +107,72 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
-  title: { fontSize: 36, fontWeight: 'bold', marginBottom: 8 },
-  subtitle: { fontSize: 16, marginBottom: 20 },
-  input: { width: '100%', borderWidth: 1, borderColor: '#ccc', borderRadius: 6, padding: 10, marginVertical: 8 },
-  signInButton: { marginTop: 10, backgroundColor: '#000', paddingVertical: 12, borderRadius: 6, width: '100%', marginBottom: 20 },
-  signInText: { color: '#fff', textAlign: 'center', fontSize: 16 },
-  socialButton: { flexDirection: 'row', alignItems: 'center', borderColor: '#ccc', borderWidth: 1, borderRadius: 6, paddingVertical: 10, paddingHorizontal: 20, width: '100%', marginBottom: 15 },
-  socialText: { fontSize: 16 },
-  registerPrompt: { fontSize: 16, marginTop: 30, color: '#333' },
-  registerButton: { marginTop: 10, backgroundColor: '#000', paddingVertical: 12, borderRadius: 6, width: '100%' },
-  registerText: { color: '#fff', textAlign: 'center', fontSize: 16 },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  title: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  input: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    padding: 10,
+    marginVertical: 8,
+  },
+  signInButton: {
+    marginTop: 10,
+    backgroundColor: '#000',
+    paddingVertical: 12,
+    borderRadius: 6,
+    width: '100%',
+    marginBottom: 20,
+  },
+  signInText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 16,
+  },
+  socialButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    width: '100%',
+    marginBottom: 15,
+  },
+  socialText: {
+    fontSize: 16,
+  },
+  registerPrompt: {
+    fontSize: 16,
+    marginTop: 30,
+    color: '#333',
+  },
+  registerButton: {
+    marginTop: 10,
+    backgroundColor: '#000',
+    paddingVertical: 12,
+    borderRadius: 6,
+    width: '100%',
+  },
+  registerText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 16,
+  },
 });

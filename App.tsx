@@ -26,6 +26,7 @@ function MainTabs() {
 
 function RootNavigator() {
   const { session } = useAuth();
+
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {session ? (
